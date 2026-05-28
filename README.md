@@ -2,8 +2,6 @@
 
 A prototype AI command-center system for routing scattered inputs into priorities, decisions, tasks, risks, assets, and business workflows.
 
-![PM3 Command Center Landing Page](assets/landing-page.png)
-
 ## Overview
 
 PM3 Command Center v1 is a prototype AI command-center system designed to turn scattered inputs into routed, prioritized, approval-based execution.
