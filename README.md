@@ -1,237 +1,182 @@
-# PM3 Command Center v1
+# PM3 Trading Command Center™
 
-A prototype AI command-center system for routing scattered inputs into priorities, decisions, tasks, risks, assets, and business workflows.
+**The Discipline Doctrine.**
 
-## Overview
+A production-ready Next.js landing page for the PM3 Trading Command Center — built to convert
+visitors into email subscribers who want to learn risk management, execution discipline, and
+AI-assisted decision-making. This is **not** a signal service and makes no profit guarantees; the
+copy and structure are intentionally FTC-compliant.
 
-PM3 Command Center v1 is a prototype AI command-center system designed to turn scattered inputs into routed, prioritized, approval-based execution.
+> Doctrine: *AI generates. Wisdom verifies. Human judgment decides.*
 
-It is not a single chatbot. It is a small agent stack that receives information, routes it to the correct workflow, produces structured outputs, and keeps the human operator in control of final action.
+## Tech Stack
 
-The system is built around one core idea:
+- **Next.js 14** (App Router, TypeScript, Route Handlers)
+- **React 18**
+- **Tailwind CSS** — custom black / charcoal / gold glassmorphism theme
+- **Framer Motion** — scroll reveals, hero animation, scroll progress bar
+- **Lucide Icons**
+- **Zod** — server-side form validation
 
-**AI can summarize, classify, draft, recommend, and route. The operator approves, commits, sends, changes, or executes.**
+## Project Structure
 
-## System Objective
+```
+app/                      Routes (App Router)
+  layout.tsx              Root layout, fonts, SEO metadata, JSON-LD
+  page.tsx                Home page — assembles all sections
+  success/page.tsx         Post-signup confirmation page
+  privacy/ terms/ contact/ Legal + contact pages
+  api/subscribe/route.ts  Signup API route (validates + forwards to email provider)
+  sitemap.ts robots.ts     SEO
+  opengraph-image.tsx      Dynamically generated OG image
 
-The objective of PM3 Command Center v1 is to create a reliable first operating loop:
+components/
+  ui/                      Button, GlassCard, Badge, Container, SectionHeading
+  layout/                  Navbar, Footer, FloatingCta, ScrollProgress, ThemeToggle, LegalPage
+  motion/                  FadeIn / FadeInStagger scroll-reveal wrappers
+  sections/                Hero, Problem, Doctrine, DisciplineStack, Features,
+                           LeadMagnet, EmailSignup, Testimonials, Faq
+  forms/                   EmailSignupForm (client component)
 
-**Input -> Route -> Process -> Approve -> Execute / Log / Store**
+lib/
+  constants.ts             All on-page copy/content (single source of truth)
+  types.ts                 Shared TypeScript types
+  validation.ts            Zod schema for the signup payload
+  email/                   Swappable email-provider adapters
+    index.ts               Factory — reads EMAIL_PROVIDER env var
+    convertkit.ts
+    mailerlite.ts
 
-The system helps manage:
+content/emails/            The 6-email welcome automation sequence (Markdown, provider-agnostic)
+styles/globals.css         Tailwind layers + theme variables + glassmorphism utilities
+public/                    Static assets (favicon)
+```
 
-- daily priorities
-- emails and messages
-- decisions
-- tasks
-- risks and blockers
-- reusable content/assets
-- real estate seller lead qualification
+## Getting Started
 
-## Core Flow
+```bash
+npm install
+cp .env.example .env.local   # then fill in the values you have
+npm run dev
+```
 
-1. Input enters the system.
-2. Master Router Agent classifies the input.
-3. Input is routed to the correct specialist agent.
-4. Specialist agent produces a structured report.
-5. Approval gate determines whether action happens.
-6. Approved items move into execution, logging, or asset creation.
+Visit `http://localhost:3000`. The signup form works end-to-end without any API keys — submissions
+are validated and accepted, and the app redirects to `/success`. Nothing is sent to a real email
+provider until you configure one (see below).
 
-## Agent Stack
+Other scripts:
 
-| Agent | Purpose |
-|---|---|
-| Master Router Agent | Routes every input to the right workflow |
-| Chief of Staff Agent | Produces Daily Command Briefs |
-| Inbox Triage Agent | Sorts Gmail and Slack messages |
-| Decision Log Agent | Captures decisions and recommendations |
-| Execution Tracker Agent | Converts approved work into visible tasks |
-| Risk & Blocker Agent | Flags risks, blockers, missing context, access issues, and scope creep |
-| Content / Asset Agent | Turns build sessions into reusable assets |
-| DealFlow OS Agent | Qualifies seller leads and creates acquisition-ready briefs |
+```bash
+npm run build       # production build
+npm run start       # run the production build
+npm run lint        # eslint
+npm run typecheck   # tsc --noEmit
+```
 
-## Approval Governance
+## Email Provider Setup
 
-The system follows one non-negotiable rule:
+The signup form abstracts the email provider behind `lib/email/index.ts` so you can swap providers
+by changing one environment variable — no component or API route changes required.
 
-**Draft first. Execute only after approval.**
+1. Copy `.env.example` to `.env.local`.
+2. Set `EMAIL_PROVIDER` to either `convertkit` or `mailerlite`.
+3. Fill in the matching credentials:
+   - **ConvertKit**: `CONVERTKIT_API_KEY`, `CONVERTKIT_FORM_ID`
+   - **MailerLite**: `MAILERLITE_API_KEY`, `MAILERLITE_GROUP_ID`
 
-Agents may:
+Each subscriber is stored with: first name, email, signup date, UTM source, landing page, and
+referral — captured automatically from the signup form.
 
-- summarize
-- classify
-- prioritize
-- recommend
-- draft
-- route
-- log
-- prepare reports
+To add a new provider, implement the `EmailProvider` interface in `lib/types.ts` (a single
+`subscribe()` method), drop the file in `lib/email/`, and register it in the `getEmailProvider()`
+switch in `lib/email/index.ts`.
 
-Agents may not, without explicit approval:
+## Email Automation Sequence
 
-- send emails
-- send Slack messages
-- schedule meetings
-- delete or archive records
-- change access permissions
-- make promises
-- commit to deals
-- spend money
-- approve final decisions
-- take external action
+`content/emails/` contains the 6-part welcome sequence referenced in the signup flow, as
+provider-agnostic Markdown with front matter (`subject`, `send` timing, `preview_text`):
 
-## Routing Logic
+1. Welcome
+2. The Discipline Doctrine
+3. Why Traders Blow Accounts
+4. Position Sizing
+5. Trading Psychology
+6. The Aristotle Check™
 
-The Master Router Agent chooses the correct path.
+Import these into your ConvertKit or MailerLite automation/sequence builder as the trigger sequence
+for new subscribers.
 
-| Input Type | Route |
-|---|---|
-| Daily planning request | Chief of Staff Agent |
-| New email or Slack message | Inbox Triage Agent |
-| Open choice or approval question | Decision Log Agent |
-| Approved work needing task tracking | Execution Tracker Agent |
-| Security alert or blocker | Risk & Blocker Agent |
-| Build lesson or public asset idea | Content / Asset Agent |
-| Seller lead or property note | DealFlow OS Agent |
+## SEO
 
-## Slack Command Center Structure
+- Metadata, OpenGraph, and Twitter card tags are set in `app/layout.tsx` from `lib/constants.ts`.
+- `app/opengraph-image.tsx` generates a real OG image at request time — no static asset to keep in
+  sync.
+- `app/sitemap.ts` and `app/robots.ts` are generated dynamically from `NEXT_PUBLIC_SITE_URL`.
+- Organization structured data (JSON-LD) is injected in the root layout.
 
-Recommended channels:
+Set `NEXT_PUBLIC_SITE_URL` to your production domain before deploying so canonical URLs, the
+sitemap, and OG metadata are correct.
 
-- `#daily-command`
-- `#approvals`
-- `#decisions`
-- `#execution`
-- `#risks-blockers`
-- `#chief-of-staff-agent`
+## Deployment
 
-## Prototype Test Results
+### Vercel (recommended)
 
-| Agent | Status | Result |
-|---|---|---|
-| Chief of Staff Agent | Passed | Produced usable Daily Command Briefs |
-| Inbox Triage Agent | Passed | Sorted messages and surfaced security context |
-| Decision Log Agent | Passed | Extracted manual-context decisions clearly |
-| Execution Tracker Agent | Passed with revision | Separated completed, active, and pending tasks |
-| Risk & Blocker Agent | Passed | Identified security/access and scope creep risks |
-| Content / Asset Agent | Passed | Created reusable assets while protecting private architecture |
-| DealFlow OS Agent | Passed with revision | Treated missing lead data as intake-required |
-| Master Router Agent | Passed | Routed security input correctly without executing |
+1. Push this repository to GitHub.
+2. Import it in [Vercel](https://vercel.com/new).
+3. Add the environment variables from `.env.example` in Project Settings → Environment Variables.
+4. Deploy. Vercel auto-detects Next.js — no build configuration needed.
 
-## System Completion Status
+### Any Node host
 
-PM3 Command Center v1 is complete as a working prototype.
+```bash
+npm run build
+npm run start   # serves on port 3000 by default
+```
 
-Completed stack:
+Set the same environment variables in your hosting provider's dashboard/secret manager.
 
-1. Master Router Agent
-2. Chief of Staff Agent
-3. Inbox Triage Agent
-4. Decision Log Agent
-5. Execution Tracker Agent
-6. Risk & Blocker Agent
-7. Content / Asset Agent
-8. DealFlow OS Agent
+### Dependency Security Note
 
-Current status: **Working prototype complete.**
+This project pins `next@14.2.35`, the latest patch on the 14.x line, which resolves the critical
+DoS advisory present in earlier 14.2.x releases. A handful of remaining `npm audit` advisories only
+have fixed versions on Next.js 16, a breaking major upgrade intentionally left out of this template.
+Run `npm audit` before deploying and evaluate whether upgrading to Next 15/16 makes sense for your
+fork.
 
-## Operating Workflow
+## Design System Notes
 
-1. Run Chief of Staff Agent for the daily brief.
-2. Run Inbox Triage Agent for new messages.
-3. Send choices and approvals to Decision Log Agent.
-4. Send approved work to Execution Tracker Agent.
-5. Send blockers and risks to Risk & Blocker Agent.
-6. Send lessons and build outputs to Content / Asset Agent.
-7. Send seller leads to DealFlow OS Agent.
-8. Use Master Router Agent when unsure where something belongs.
+- Theme tokens (`--bg`, `--fg`, `--fg-muted`, etc.) live in `styles/globals.css` and are consumed
+  via Tailwind color aliases (`bg-bg`, `text-fg`, `text-fg-muted`) so components never hardcode
+  hex values.
+- Dark is the primary, brand-defining theme; a light mode is available via the navbar toggle
+  (`components/layout/theme-toggle.tsx`) and persisted to `localStorage`.
+- Glassmorphism surfaces use the `.glass-panel` / `.glass-panel-strong` utility classes.
+- All content-bearing copy (cards, FAQ, testimonials, pipeline stages) lives in
+  `lib/constants.ts` — update copy there rather than in component files.
 
-## Security Notes
+## Compliance
 
-Security and access items must always be handled with caution.
+Copy across the site avoids income claims, guarantees, and "get rich quick" framing by design. The
+footer includes a standing risk disclosure, and the FAQ explicitly states this is not a signal
+service and profits are not guaranteed. Review `lib/constants.ts` (`FAQ_ITEMS`) and
+`components/layout/footer.tsx` before making copy changes to keep this intact.
 
-Examples:
+## License
 
-- login codes
-- password resets
-- account access alerts
-- third-party app permissions
-- connected app notices
-- suspicious sign-ins
-- authentication codes
+Proprietary — PM3™. All trademarks referenced (PM3™, PM3 Trading Command Center™, Aristotle
+Check™, Trading Kill Switch™) belong to their respective owner.
 
-Security-related inputs should be routed first to **Risk & Blocker Agent**.
+---
 
-Secondary route: **Inbox Triage Agent**.
+## Other Projects in This Repository
 
-No account changes should be made without approval.
+This repository also hosts unrelated PM3-branded prototypes that predate this landing page and are
+kept for reference:
 
-## Scope Control
+- `intelligence-compounding-ledger/` — pointer/README for a separate module, not part of this
+  Next.js app.
+- `docs/agent-stack-prototype.md` — the original repository README, describing an unrelated
+  Slack-based AI agent stack prototype (this file's previous content, preserved verbatim).
 
-PM3 Command Center v1 should stay focused on the first complete operating loop.
-
-Avoid expanding into:
-
-- full automation
-- external sending
-- autonomous scheduling
-- autonomous CRM updates
-- financial decisions
-- legal commitments
-- complex multi-user deployment
-
-until the approval, testing, and security model is stronger.
-
-## Current Limitations
-
-This v1 system is still a prototype.
-
-Known limits:
-
-- Some workflows still rely on manual context.
-- Agents do not yet share persistent state perfectly.
-- Tool connections require careful permission review.
-- Outputs need human grading before trust increases.
-- The system should not execute external actions without approval.
-- Business-use workflows need real-world test data before stronger claims.
-
-## Next Improvements
-
-Recommended v1.1 improvements:
-
-1. Create a master agent registry.
-2. Save all agent prompts in one controlled document.
-3. Create a reusable test suite for each agent.
-4. Add owner and due-date defaults.
-5. Add proof-level tracking for Content / Asset outputs.
-6. Add security/access review checklist.
-7. Create a daily operating cadence.
-8. Package the system as a reusable setup sprint.
-9. Build a lightweight dashboard for agent status.
-10. Test the DealFlow OS Agent with real seller leads.
-
-## Rebuild Recipe
-
-1. Create the Slack workspace.
-2. Create the six core channels.
-3. Pin the channel map.
-4. Build Chief of Staff Agent.
-5. Build Inbox Triage Agent.
-6. Build Decision Log Agent.
-7. Build Execution Tracker Agent.
-8. Build Risk & Blocker Agent.
-9. Build Content / Asset Agent.
-10. Build DealFlow OS Agent.
-11. Build Master Router Agent.
-12. Test each agent.
-13. Grade each output.
-14. Revise weak rules.
-15. Document final operating flow.
-
-## Final Definition
-
-PM3 Command Center v1 is a portable AI operations prototype that turns scattered work into routed, approval-based execution.
-
-Its core pattern is:
-
-**Input -> Route -> Agent -> Report -> Approval -> Execution / Log / Asset**
+The trading landing page above (root `app/`, `components/`, `lib/`, etc.) is a standalone Next.js
+project and does not depend on anything in that folder.
